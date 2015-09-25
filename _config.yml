@@ -5,7 +5,7 @@ description: > # this means to ignore newlines until "baseurl:"
  Java码农一个
 baseurl: "/zhengfei" # the subpath of your site, e.g. /blog/
 url: "http://yzhengfei.github.io" # the base hostname & protocol for your site
-github_username: yzhengfei 
+github: yzhengfei 
 
 # Sidebar filter
 # Choose 'tag' or 'category' as filter in sidebar.
