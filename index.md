@@ -3,6 +3,8 @@ layout: default
 ---
 #Welcome
 
+![图一]({{site.baseurl}}/assets/img/index/IMG_0046.JPG)
+
 ##目的
 
 工作好长时间了,发现自己的记忆力貌似没有以前那样旺盛了,决定以后没事的时候写写自己的博客,记录自己的人生点滴
@@ -10,3 +12,5 @@ layout: default
 ##感谢
 
 在搜索技术资料的时候,无意间看到[闫肃的博客](http://yansu.org/),给我深受启发,自己生活习惯是该试着去改变一下.
+
+![图二]({{site.baseurl}}/assets/img/index/IMG_0045.JPG)
