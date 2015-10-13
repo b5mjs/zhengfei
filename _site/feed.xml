@@ -6,72 +6,196 @@
 </description>
     <link>http://yzhengfei.github.io/blog/</link>
     <atom:link href="http://yzhengfei.github.io/blog/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Mon, 12 Oct 2015 16:26:55 +0800</pubDate>
-    <lastBuildDate>Mon, 12 Oct 2015 16:26:55 +0800</lastBuildDate>
+    <pubDate>Tue, 13 Oct 2015 18:21:45 +0800</pubDate>
+    <lastBuildDate>Tue, 13 Oct 2015 18:21:45 +0800</lastBuildDate>
     <generator>Jekyll v2.5.3</generator>
+    
+      <item>
+        <title>Extjs5-Ext.form.field.Tag初始化数据实现filter加载</title>
+        <description>&lt;p&gt;公司后台管理系统是Extjs5开发的,应业务需求需要,要实现combobox多选功能,Extjs5本身功能很强大,肯定已经有这样的组件&lt;a href=&quot;http://docs.sencha.com/extjs/5.1/5.1.1-apidocs/#!/api/Ext.form.field.Tag&quot;&gt;Ext.form.field.Tag&lt;/a&gt;,运行人家的Demo,觉得很炫酷.
+&lt;img src=&quot;/blog/assets/img/2015-10-13/2015-10-13%2016:16:26.png&quot; alt=&quot;Extjs Demo&quot;&gt;&lt;/p&gt;
+
+&lt;p&gt;自己运行了一下,感觉自己掉进坑里了,如果有默认值的话,会死循环从服务器加载数据,刚开始觉得自己调用方式有问题,弄了半天,发现还是不行,网上搜搜基本上没有好的解决方法,想了想还是自己看人家的源码吧,功夫不负有心人,居然让我给找到了.
+&lt;img src=&quot;/blog/assets/img/2015-10-13/2015-10-13%2016:26:45.png&quot; alt=&quot;Extjs源码&quot;&gt;&lt;/p&gt;
+
+&lt;p&gt;setValue这个方法中处理从远程加载数据及重复加载问题,解决方式请看下图注释,已详细解释
+&lt;img src=&quot;/blog/assets/img/2015-10-13/2015-10-13%2016:52:14.png&quot; alt=&quot;死循环处理&quot;&gt;&lt;/p&gt;
+
+&lt;p&gt;回到帖子主题,Extjs默认从服务器加载不存在的记录时候是通过valueParam这个参数控制的(例如:valueParam=ids,那么请求的参数为ids=1,2,3,4,5),但是我的服务端是已经写好了,不想再增加这个参数操作,想直接通过filter参数格式加载,怎么办,请看下图
+&lt;img src=&quot;/blog/assets/img/2015-10-13/2015-10-13%2016:33:45.png&quot; alt=&quot;filter请求更改&quot;&gt;&lt;/p&gt;
+
+&lt;p&gt;快来看看效果吧
+&lt;img src=&quot;/blog/assets/img/2015-10-13/2015-10-13%2016:34:45.png&quot; alt=&quot;快来看看效果吧&quot;&gt;&lt;/p&gt;
+
+&lt;p&gt;重写Ext.form.field.Tag的代码&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-javascript&quot; data-lang=&quot;javascript&quot;&gt;&lt;span class=&quot;nx&quot;&gt;Ext&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;define&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;Overrides.form.field.Tag&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;override&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;Ext.form.field.Tag&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+
+    &lt;span class=&quot;nx&quot;&gt;setValue&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;cm&quot;&gt;/* private */&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;add&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;skipLoad&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;me&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;valueStore&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;me&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;valueStore&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;valueField&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;me&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;valueField&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;unknownValues&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[],&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;store&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;me&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;store&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;record&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;len&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;valueRecord&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;cls&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;isNumber&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;Ext&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;isEmpty&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;Ext&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;isString&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;me&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;multiSelect&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;split&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;me&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;delimiter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Ext&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;Array&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;from&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+        &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;len&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;length&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;len&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;record&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;record&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;record&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;isModel&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+
+                &lt;span class=&quot;cm&quot;&gt;/**&lt;/span&gt;
+&lt;span class=&quot;cm&quot;&gt;                 * 此组件默认是对字符串处理,我这边只对数字做了处理,Extjs还支持boolean/date,各位根据自己的需求自己实现&lt;/span&gt;
+&lt;span class=&quot;cm&quot;&gt;                 * 至于为什么要做转换,是由于此组件的findRecord方法中,Store根据字段名和字段值获取这条记录这个方法导致的&lt;/span&gt;
+&lt;span class=&quot;cm&quot;&gt;                 *  var matches = this.getStore().queryRecords(field, value);&lt;/span&gt;
+&lt;span class=&quot;cm&quot;&gt;                 * Tag组件字段类型是字符串,split后肯定也是字符串,如果field的字段类型是int,那么通过queryRecords是获取不到&lt;/span&gt;
+&lt;span class=&quot;cm&quot;&gt;                 * 此记录的,就算值一样(类型不一样,例如:1==&amp;#39;1&amp;#39;),我觉得这是Extjs的一个bug吧&lt;/span&gt;
+&lt;span class=&quot;cm&quot;&gt;                 */&lt;/span&gt;
+                &lt;span class=&quot;c1&quot;&gt;//检测是否是数字处理&lt;/span&gt;
+                &lt;span class=&quot;nx&quot;&gt;isNumber&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Ext&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;Number&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;from&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;record&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+                &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;isNumber&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!==&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+                    &lt;span class=&quot;nx&quot;&gt;record&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;isNumber&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+                &lt;span class=&quot;c1&quot;&gt;//检测是否是Boolean处理&lt;/span&gt;
+                &lt;span class=&quot;c1&quot;&gt;//......&lt;/span&gt;
+                &lt;span class=&quot;c1&quot;&gt;//检测是否是date处理&lt;/span&gt;
+                &lt;span class=&quot;c1&quot;&gt;//......&lt;/span&gt;
+
+                &lt;span class=&quot;nx&quot;&gt;valueRecord&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;valueStore&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;findExact&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;valueField&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;record&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+                &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;valueRecord&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                    &lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;valueStore&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;getAt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;valueRecord&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+                &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                    &lt;span class=&quot;nx&quot;&gt;valueRecord&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;me&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;findRecord&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;valueField&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;record&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+                    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;valueRecord&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;me&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;forceSelection&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                            &lt;span class=&quot;nx&quot;&gt;unknownValues&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;push&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;record&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+                        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                            &lt;span class=&quot;nx&quot;&gt;valueRecord&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{};&lt;/span&gt;
+                            &lt;span class=&quot;nx&quot;&gt;valueRecord&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;me&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;valueField&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;record&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+                            &lt;span class=&quot;nx&quot;&gt;valueRecord&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;me&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;displayField&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;record&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+                            &lt;span class=&quot;nx&quot;&gt;cls&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;me&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;valueStore&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;getModel&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+                            &lt;span class=&quot;nx&quot;&gt;valueRecord&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;cls&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;valueRecord&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+                        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+                    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+                    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;valueRecord&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                        &lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;valueRecord&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+                    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+                &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;store&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;isEmptyStore&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;skipLoad&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!==&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;unknownValues&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;length&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;me&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;queryMode&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;===&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;remote&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;params&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{};&lt;/span&gt;
+            &lt;span class=&quot;cm&quot;&gt;/**&lt;/span&gt;
+&lt;span class=&quot;cm&quot;&gt;             * 我的应用走的标准的Extjs MVVM,为了统一风格,将此传参方式改为Filter形式&lt;/span&gt;
+&lt;span class=&quot;cm&quot;&gt;             */&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;me&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;valueParam&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;me&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;valueField&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Ext&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;encode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([{&lt;/span&gt;
+                &lt;span class=&quot;nx&quot;&gt;property&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;me&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;valueField&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                &lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;unknownValues&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                &lt;span class=&quot;nx&quot;&gt;operator&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;in&amp;#39;&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;}]);&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;store&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;load&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;
+                &lt;span class=&quot;nx&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                &lt;span class=&quot;nx&quot;&gt;callback&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;me&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;itemList&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                        &lt;span class=&quot;nx&quot;&gt;me&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;itemList&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;unmask&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+                    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+                    &lt;span class=&quot;nx&quot;&gt;me&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;setValue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;add&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+                    &lt;span class=&quot;nx&quot;&gt;me&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;autoSize&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+                    &lt;span class=&quot;nx&quot;&gt;me&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;lastQuery&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+                &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+        &lt;span class=&quot;c1&quot;&gt;// For single-select boxes, use the last good (formal record) value if possible&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;me&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;multiSelect&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;length&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;length&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;--&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;].&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;isModel&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                    &lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+                    &lt;span class=&quot;k&quot;&gt;break&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+                &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;Ext&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;isArray&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                &lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;length&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;me&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;callSuper&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;add&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]);&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</description>
+        <pubDate>Tue, 13 Oct 2015 02:01:20 +0800</pubDate>
+        <link>http://yzhengfei.github.io/blog/2015/10/13/Extjs5-Ext.form.field.Tag%E5%88%9D%E5%A7%8B%E5%8C%96%E6%95%B0%E6%8D%AE%E5%AE%9E%E7%8E%B0filter%E5%8A%A0%E8%BD%BD.html</link>
+        <guid isPermaLink="true">http://yzhengfei.github.io/blog/2015/10/13/Extjs5-Ext.form.field.Tag%E5%88%9D%E5%A7%8B%E5%8C%96%E6%95%B0%E6%8D%AE%E5%AE%9E%E7%8E%B0filter%E5%8A%A0%E8%BD%BD.html</guid>
+        
+        <category>Extjs5</category>
+        
+        
+      </item>
     
       <item>
         <title>Linux命令-MySql binlog分析示例</title>
         <description>&lt;p&gt;话说公司项目用到阿里开源项目&lt;a href=&quot;https://github.com/alibaba/otter&quot;&gt;Otter&lt;/a&gt;,一直运行没有问题,突然今天出现了数据不一致的情况,主库数据正常,从库数据出现了重复,问从库的业务方是否自己人工操作或者有程序在后边运行没,说他们那边没有的,所以想来想去,还是看binlog是否有操作过,如果binlog存在记录,那就说明同步出现了问题,如果不存在,肯定是业务方那边有数据操作,废话不多说,开始操作.&lt;/p&gt;
 
-&lt;h1 id=&quot;step-1binlog&quot;&gt;Step-1:找到binlog日志目录&lt;/h1&gt;
+&lt;h1&gt;Step-1:找到binlog日志目录&lt;/h1&gt;
+
 &lt;p&gt;一般mysql的配置文件在/etc/my.cnf&lt;/p&gt;
-
-&lt;p&gt;&lt;code&gt;shell
-cat /etc/my.cnf
-&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/blog/assets/img/2015-10-12/2015-10-12 14:24:44.png&quot; alt=&quot;/etc/my.cof&quot; /&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;cat /etc/my.cnf
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;&lt;img src=&quot;/blog/assets/img/2015-10-12/2015-10-12%2014:24:44.png&quot; alt=&quot;/etc/my.cof&quot;&gt;
 log_bin对应的参数就为binlog文件存放的目录(/data0/db-binlog/test/passport/)&lt;/p&gt;
 
-&lt;h1 id=&quot;step-2-mysqlbinlog&quot;&gt;Step-2: 使用mysqlbinlog命令提取二进制日志&lt;/h1&gt;
+&lt;h1&gt;Step-2: 使用mysqlbinlog命令提取二进制日志&lt;/h1&gt;
+
 &lt;p&gt;我的测试环境binlog日志并不多,定期的会删除,如下图
-&lt;img src=&quot;/blog/assets/img/2015-10-12/2015-10-12 14:38:49.png&quot; alt=&quot;binlog日志列表&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;code&gt;shell
-mysqlbinlog --start-datetime='2015-04-22 20:51:00' --stop-datetime='2015-04-22 21:01:00' --base64-output -v mysql-bin.000022 &amp;gt; temp-file.1
-&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;--start-datetime:sql执行开始时间&lt;br /&gt;
---stop-datetime:sql执行结束时间&lt;br /&gt;
-mysql-bin.000022:binlog日志文件名 &lt;br /&gt;
-temp-file.1:转换后的日志文件名&lt;/p&gt;
+&lt;img src=&quot;/blog/assets/img/2015-10-12/2015-10-12%2014:38:49.png&quot; alt=&quot;binlog日志列表&quot;&gt;&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;mysqlbinlog --start-datetime&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;2015-04-22 20:51:00&amp;#39;&lt;/span&gt; --stop-datetime&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;2015-04-22 21:01:00&amp;#39;&lt;/span&gt; --base64-output -v mysql-bin.000022 &amp;gt; temp-file.1
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;--start-datetime:sql执行开始时间&lt;br&gt;
+--stop-datetime:sql执行结束时间&lt;br&gt;
+mysql-bin.000022:binlog日志文件名&lt;br&gt;
+temp-file.1:转换后的日志文件名  &lt;/p&gt;
 
 &lt;p&gt;例如:将多个binlog二进制日志文件提取到zhengfei.tmp.1文件
-&lt;img src=&quot;/blog/assets/img/2015-10-12/2015-10-12 15:22:56.png&quot; alt=&quot;binlog日志列表&quot; /&gt;&lt;/p&gt;
+&lt;img src=&quot;/blog/assets/img/2015-10-12/2015-10-12%2015:22:56.png&quot; alt=&quot;binlog日志列表&quot;&gt;&lt;/p&gt;
 
 &lt;p&gt;注意:binlog日志很大的话,执行此命令比较慢,请耐心等待,如果有好的方法的话可以推荐给我,多谢啦!!!&lt;/p&gt;
 
-&lt;h1 id=&quot;step-3&quot;&gt;Step-3:从日志文件中过滤自己有用的信息&lt;/h1&gt;
+&lt;h1&gt;Step-3:从日志文件中过滤自己有用的信息&lt;/h1&gt;
 
 &lt;p&gt;转换后的文件我们就可以通过head tail tailf等命令查看了,如果日志文件很大的化,不要用vi vim cat等命令查看,结果么,你懂的&lt;/p&gt;
 
 &lt;p&gt;我现在要查对某个数据库的某张表执行sql insert语句,如下:&lt;/p&gt;
-
-&lt;p&gt;&lt;code&gt;shell
-grep -A 35 '### INSERT INTO `test_db_name`.`test_table_name`' zhengfei.tmp.1 &amp;gt; zhengfei.tmp.2
-&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;-A:匹配到这行数据向下35行都显示(数字根据自己的数据结构自己调整)&lt;br /&gt;
-单引号里面内容为匹配内容&lt;br /&gt;
-zhengfei.tmp.1:要匹配的文件&lt;br /&gt;
-zhengfei.tmp.2:匹配的结果&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;grep -A &lt;span class=&quot;m&quot;&gt;35&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;### INSERT INTO `test_db_name`.`test_table_name`&amp;#39;&lt;/span&gt; zhengfei.tmp.1 &amp;gt; zhengfei.tmp.2
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;-A:匹配到这行数据向下35行都显示(数字根据自己的数据结构自己调整)&lt;br&gt;
+单引号里面内容为匹配内容&lt;br&gt;
+zhengfei.tmp.1:要匹配的文件&lt;br&gt;
+zhengfei.tmp.2:匹配的结果  &lt;/p&gt;
 
 &lt;p&gt;例如:这是我匹配到的其中一条数据
-&lt;img src=&quot;/blog/assets/img/2015-10-12/2015-10-12 15:49:39.png&quot; alt=&quot;这是我匹配到的其中一条数据&quot; /&gt;&lt;/p&gt;
+&lt;img src=&quot;/blog/assets/img/2015-10-12/2015-10-12%2015:49:39.png&quot; alt=&quot;这是我匹配到的其中一条数据&quot;&gt;&lt;/p&gt;
 
 &lt;p&gt;当我匹配到这些数据后,我想匹配ID为5356的数据
-&lt;img src=&quot;/blog/assets/img/2015-10-12/2015-10-12 16:07:51.png&quot; alt=&quot;这是我匹配到的其中一条数据&quot; /&gt;&lt;/p&gt;
+&lt;img src=&quot;/blog/assets/img/2015-10-12/2015-10-12%2016:07:51.png&quot; alt=&quot;这是我匹配到的其中一条数据&quot;&gt;&lt;/p&gt;
 
-&lt;p&gt;-A:向下打印多少行&lt;br /&gt;
--B:向上打印多少行&lt;/p&gt;
+&lt;p&gt;-A:向下打印多少行&lt;br&gt;
+-B:向上打印多少行  &lt;/p&gt;
 
-&lt;h1 id=&quot;section&quot;&gt;总结&lt;/h1&gt;
+&lt;h1&gt;总结&lt;/h1&gt;
 
 &lt;p&gt;对于此次日志分析,otter同步没有问题(这么牛逼的东东,怎能出现这种问题),可以判断是业务方那边出了问题.&lt;/p&gt;
 
-&lt;p&gt;对于各自可以根据自己的需求做出灵活的应用,祝你好运!!!&lt;/p&gt;
-
+&lt;p&gt;对于各位可以根据自己的需求做出灵活的应用,祝你好运!!!&lt;/p&gt;
 </description>
         <pubDate>Mon, 12 Oct 2015 21:43:07 +0800</pubDate>
         <link>http://yzhengfei.github.io/blog/2015/10/12/Linux%E5%91%BD%E4%BB%A4-MySql%20binlog%E5%88%86%E6%9E%90%E7%A4%BA%E4%BE%8B.html</link>
@@ -86,27 +210,27 @@ zhengfei.tmp.2:匹配的结果&lt;/p&gt;
         <title>微信营销打假-周大福集月饼</title>
         <description>&lt;p&gt;今日打假周大福，话说集齐七种不同馅的月饼，赠送金项链，当你点进好友分享的活动页面，其实已经帮好友集了一种馅的月饼，而在你打开页面瞬间，周大福的服务端会给你这台机器分配一个用户ID（用来分享的时候标示你，如下图）&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;/blog/assets/img/2015-09-24/IMG_0608.PNG&quot; alt=&quot;图一&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/blog/assets/img/2015-09-24/IMG_0608.PNG&quot; alt=&quot;图一&quot;&gt;&lt;/p&gt;
 
 &lt;p&gt;还有你当前这个用户的会话（用来关联这个用户与这台机器绑定了，如下图）&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;/blog/assets/img/2015-09-24/IMG_0609.PNG&quot; alt=&quot;图二&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/blog/assets/img/2015-09-24/IMG_0609.PNG&quot; alt=&quot;图二&quot;&gt;&lt;/p&gt;
 
 &lt;p&gt;知道了这些，就可以对此活动进行模拟，这次我决定用jmeter测试它，在着手准备的时候，发现直接用手机浏览器打开页面是空白的，没办法只能用wireshark对微信打开此页面抓包，如下图&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;/blog/assets/img/2015-09-24/IMG_0610.PNG&quot; alt=&quot;图三&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/blog/assets/img/2015-09-24/IMG_0610.PNG&quot; alt=&quot;图三&quot;&gt;&lt;/p&gt;
 
 &lt;p&gt;准备完毕，打开jmeter，对jmeter进行一系列设置，如下图
-&lt;img src=&quot;/blog/assets/img/2015-09-24/IMG_0611.PNG&quot; alt=&quot;图四&quot; /&gt;
-&lt;img src=&quot;/blog/assets/img/2015-09-24/IMG_0612.PNG&quot; alt=&quot;图五&quot; /&gt;&lt;/p&gt;
+&lt;img src=&quot;/blog/assets/img/2015-09-24/IMG_0611.PNG&quot; alt=&quot;图四&quot;&gt;
+&lt;img src=&quot;/blog/assets/img/2015-09-24/IMG_0612.PNG&quot; alt=&quot;图五&quot;&gt;&lt;/p&gt;
 
 &lt;p&gt;下图是我测试了3000条数据&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;/blog/assets/img/2015-09-24/IMG_0613.PNG&quot; alt=&quot;图六&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/blog/assets/img/2015-09-24/IMG_0613.PNG&quot; alt=&quot;图六&quot;&gt;&lt;/p&gt;
 
 &lt;p&gt;下图是测试结果，基本上这个活动是骗人的，其他六个馅的概率是一样大的，如果测试N(无限大)条数据，这六个馅的出现次数会越来越接近相同，而那个为0的馅的月饼，是永远刷不到的&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;/blog/assets/img/2015-09-24/IMG_0614.PNG&quot; alt=&quot;图七&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/blog/assets/img/2015-09-24/IMG_0614.PNG&quot; alt=&quot;图七&quot;&gt;&lt;/p&gt;
 </description>
         <pubDate>Sat, 26 Sep 2015 00:00:30 +0800</pubDate>
         <link>http://yzhengfei.github.io/blog/2015/09/26/%E5%BE%AE%E4%BF%A1%E8%90%A5%E9%94%80%E6%89%93%E5%81%87-%E5%91%A8%E5%A4%A7%E7%A6%8F%E9%9B%86%E6%9C%88%E9%A5%BC.html</link>
@@ -121,28 +245,28 @@ zhengfei.tmp.2:匹配的结果&lt;/p&gt;
         <title>微信营销打假-车轮考驾照集字送学驾照费用</title>
         <description>&lt;p&gt;话说本人还没有驾照,想想那时上大学考驾照不到2k,懒得没考,现在想想甚是后悔.来到一线城市后,水涨船高,没个万把块搞不下来,那天朋友圈有人分享车轮考驾照集字送学驾照费用,有点动心了,就看了看人家活动,照着规则找了好多朋友去集字,最后集的就剩一个字了,有点心不甘,继续找人集,结果可想而知,死活集不到,然后就动起了歪脑筋,看了看人家代码,这一看不知道,看了吓一跳,如下图&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;/blog/assets/img/2015-08-25/IMG_0619.JPG&quot; alt=&quot;图一&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/blog/assets/img/2015-08-25/IMG_0619.JPG&quot; alt=&quot;图一&quot;&gt;&lt;/p&gt;
 
 &lt;p&gt;通过上图人家工程师代码注释来看,总结一句话,活动貌似是真的,但是一个地区只有一个名额,与他那个百万学车基金字眼对比来说,又觉得是假的,他上边就支持几个城市,最多下来也就十来万.
 不多说了,咱们看看翻牌功能流程是如何实现的,翻牌的时候先去服务器获取“让学车变的更简单”对应每个字的hash串（相同字每次都变，类似动态密码），只随机返回三个字的（如下图所示）&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;/blog/assets/img/2015-08-25/IMG_0620.JPG&quot; alt=&quot;图二&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/blog/assets/img/2015-08-25/IMG_0620.JPG&quot; alt=&quot;图二&quot;&gt;&lt;/p&gt;
 
 &lt;p&gt;然后拿到这个字的动态密码，访问另外一个接口，去验证这个字是否可以翻牌（如下图所示）&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;/blog/assets/img/2015-08-25/IMG_0621.JPG&quot; alt=&quot;图三&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/blog/assets/img/2015-08-25/IMG_0621.JPG&quot; alt=&quot;图三&quot;&gt;&lt;/p&gt;
 
 &lt;p&gt;所以要想获得所有字，第一个接口是关键，我就写了个小程序，轮询这个接口，期待缺少字动态密码出现（如下图所示）&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;/blog/assets/img/2015-08-25/IMG_0622.JPG&quot; alt=&quot;图四&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/blog/assets/img/2015-08-25/IMG_0622.JPG&quot; alt=&quot;图四&quot;&gt;&lt;/p&gt;
 
 &lt;p&gt;下班后,我将我的小程序跑起来,轮询了一夜人家的接口,轮询一次就代表分享一次，时间为1s每次,结果么就是我们被骗了,更有意思的是,车轮网的开发当夜没睡觉，连夜修复这个问题，看了看代码，只是增加了难度，没有从根本上解决问题，而且把不该给人看的注释给删了。从我的小程序爬取结果来看，此程序是php开发的（如下图所示中红色部分中有，昨夜这开发估计太累了，忘了把之前的接口删了，只是把接口调用模块给删了，从而暴露了程序语言，以及程序存放服务器位置）&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;/blog/assets/img/2015-08-25/IMG_0617.JPG&quot; alt=&quot;图五&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/blog/assets/img/2015-08-25/IMG_0617.JPG&quot; alt=&quot;图五&quot;&gt;&lt;/p&gt;
 
 &lt;p&gt;至于现在改成了什么样，请看下图注释&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;/blog/assets/img/2015-08-25/IMG_0618.JPG&quot; alt=&quot;图六&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/blog/assets/img/2015-08-25/IMG_0618.JPG&quot; alt=&quot;图六&quot;&gt;&lt;/p&gt;
 
 &lt;p&gt;又过了貌似两三天,我又去看了人家的代码,这次人家对js做了压缩处理,像一些注释什么的都没了,对于一个开发来说,这也是一种进步,对于我来说也是一种学习,今天就到这了,拜拜!!!&lt;/p&gt;
 </description>

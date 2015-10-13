@@ -12,7 +12,7 @@ published: True
 #Step-1:找到binlog日志目录
 一般mysql的配置文件在/etc/my.cnf
 
-```shell
+```bash
 cat /etc/my.cnf
 ```
 
@@ -23,7 +23,7 @@ log_bin对应的参数就为binlog文件存放的目录(/data0/db-binlog/test/pa
 我的测试环境binlog日志并不多,定期的会删除,如下图
 ![binlog日志列表]({{site.baseurl}}/assets/img/2015-10-12/2015-10-12 14:38:49.png)
 
-``` shell
+``` bash
 mysqlbinlog --start-datetime='2015-04-22 20:51:00' --stop-datetime='2015-04-22 21:01:00' --base64-output -v mysql-bin.000022 > temp-file.1
 ```
 
@@ -43,7 +43,7 @@ temp-file.1:转换后的日志文件名
 
 我现在要查对某个数据库的某张表执行sql insert语句,如下:
 
-```shell
+```bash
 grep -A 35 '### INSERT INTO `test_db_name`.`test_table_name`' zhengfei.tmp.1 > zhengfei.tmp.2
 ```
 
@@ -65,5 +65,5 @@ zhengfei.tmp.2:匹配的结果
 
 对于此次日志分析,otter同步没有问题(这么牛逼的东东,怎能出现这种问题),可以判断是业务方那边出了问题.
 
-对于各自可以根据自己的需求做出灵活的应用,祝你好运!!!
+对于各位可以根据自己的需求做出灵活的应用,祝你好运!!!
 
