@@ -6,9 +6,92 @@
 </description>
     <link>http://yzhengfei.github.io/blog/</link>
     <atom:link href="http://yzhengfei.github.io/blog/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Wed, 14 Oct 2015 11:52:34 +0800</pubDate>
-    <lastBuildDate>Wed, 14 Oct 2015 11:52:34 +0800</lastBuildDate>
+    <pubDate>Sun, 15 Nov 2015 16:25:24 +0800</pubDate>
+    <lastBuildDate>Sun, 15 Nov 2015 16:25:24 +0800</lastBuildDate>
     <generator>Jekyll v2.5.3</generator>
+    
+      <item>
+        <title>Linux命令-MySql json column数据去重处理</title>
+        <description>&lt;h2&gt;先说需求&lt;/h2&gt;
+
+&lt;p&gt;公司某项目数据存储在MySql中值是一个Json字符串
+例如:&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-json&quot; data-lang=&quot;json&quot;&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;quot;main_position&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;quot;name_en&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot; Centre Back &amp;quot;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt; 
+    &lt;span class=&quot;nt&quot;&gt;&amp;quot;side_position&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;nt&quot;&gt;&amp;quot;name_en&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;Defensive Midfield &amp;quot;&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt; 
+        &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;nt&quot;&gt;&amp;quot;name_en&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;Left-Back &amp;quot;&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;现要将name_en这个字段做去重处理,看看到底有多少种类型&lt;/p&gt;
+
+&lt;h2&gt;解决方法&lt;/h2&gt;
+
+&lt;p&gt;1.写代码,通过程序去读这个字段值,然后做去重处理&lt;/p&gt;
+
+&lt;p&gt;2.通过linux命令做去重处理&lt;/p&gt;
+
+&lt;p&gt;1和2都能实现此功能,但是从速度上来说(不是性能哦,具体性能方面我没有做过测试),2这种方式比较简便,那我们按照第2种方式来实现&lt;/p&gt;
+
+&lt;h2&gt;具体实现&lt;/h2&gt;
+
+&lt;p&gt;1.将数据库字段值导出到一个文本文件&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;mysql -uroot -p -h192.168.9.42 -e &lt;span class=&quot;s2&quot;&gt;&amp;quot;select position from table_name where position is not null&amp;quot;&lt;/span&gt; db_name &amp;gt; data.txt
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;导出的文件内容如下&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;position
+{&amp;quot;main_position&amp;quot;:{&amp;quot;name_en&amp;quot;:&amp;quot; Centre Back &amp;quot;}}
+{&amp;quot;main_position&amp;quot;:{&amp;quot;name_en&amp;quot;:&amp;quot; Keeper &amp;quot;}}
+{&amp;quot;main_position&amp;quot;:{&amp;quot;name_en&amp;quot;:&amp;quot; Keeper &amp;quot;}}
+{&amp;quot;main_position&amp;quot;:{&amp;quot;name_en&amp;quot;:&amp;quot; Centre Back &amp;quot;},&amp;quot;side_position&amp;quot;:[{&amp;quot;name_en&amp;quot;:&amp;quot;Right-Back &amp;quot;}]}
+{&amp;quot;main_position&amp;quot;:{&amp;quot;name_en&amp;quot;:&amp;quot; Keeper &amp;quot;}}
+{&amp;quot;main_position&amp;quot;:{&amp;quot;name_en&amp;quot;:&amp;quot; Keeper &amp;quot;}}
+{&amp;quot;main_position&amp;quot;:{&amp;quot;name_en&amp;quot;:&amp;quot; Keeper &amp;quot;}}
+{&amp;quot;main_position&amp;quot;:{&amp;quot;name_en&amp;quot;:&amp;quot; Keeper &amp;quot;}}
+{&amp;quot;main_position&amp;quot;:{&amp;quot;name_en&amp;quot;:&amp;quot; Keeper &amp;quot;}}
+......
+......
+......
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;2.逐行解析json字符串&lt;/p&gt;
+
+&lt;p&gt;linux处理json命令有好多,我这里选择&lt;a href=&quot;http://stedolan.github.io/jq/&quot;&gt;jq&lt;/a&gt;,具体安装方法详见这里&lt;a href=&quot;https://stedolan.github.io/jq/download/&quot;&gt;安装方法&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;注:jq版本大于等于1.4,不然filter中?号用不了&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;awk &lt;span class=&quot;s1&quot;&gt;&amp;#39; NR != 1 {print $0}&amp;#39;&lt;/span&gt; data.txt &lt;span class=&quot;p&quot;&gt;|&lt;/span&gt; jq &lt;span class=&quot;s2&quot;&gt;&amp;quot;.main_position.name_en, .side_position[]?.name_en&amp;quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;|&lt;/span&gt;sed -e &lt;span class=&quot;s1&quot;&gt;&amp;#39;s/^&amp;quot;*\s*//g&amp;#39;&lt;/span&gt; -e &lt;span class=&quot;s1&quot;&gt;&amp;#39;s/\s*&amp;quot;*$//g&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;|&lt;/span&gt;sort -u
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;解释一下:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;awk &amp;#39; NR != 1 {print $0}&amp;#39; data.txt 主要是去逐行读取刚才从数据库中导出的数据,从第二行开始读&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;jq &amp;quot;.main&lt;em&gt;position.name&lt;/em&gt;en, .side&lt;em&gt;position[]?.name&lt;/em&gt;en&amp;quot; 将main&lt;em&gt;position下的name&lt;/em&gt;en字段值和side&lt;em&gt;position数组下的name&lt;/em&gt;en值解析出来&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;sed -e &amp;#39;s/^&amp;quot;&lt;em&gt;\s&lt;/em&gt;//g&amp;#39; -e &amp;#39;s/\s&lt;em&gt;&amp;quot;&lt;/em&gt;$//g&amp;#39; 将解析出值中的双引号和前后空格替换为空字符串&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;sort -u 排序去重&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;Show Time&lt;/h2&gt;
+
+&lt;p&gt;看一下最终执行结果&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://7xnxev.com1.z0.glb.clouddn.com/2015-11-15/2015-11-15%2016%3A10%3A52.png&quot; alt=&quot;结果&quot;&gt;&lt;/p&gt;
+
+&lt;p&gt;比写代码快多了吧&lt;/p&gt;
+</description>
+        <pubDate>Sun, 15 Nov 2015 22:55:29 +0800</pubDate>
+        <link>http://yzhengfei.github.io/blog/2015/11/15/Linux%E5%91%BD%E4%BB%A4-MySql%20json%20column%E6%95%B0%E6%8D%AE%E5%8E%BB%E9%87%8D%E5%A4%84%E7%90%86.html</link>
+        <guid isPermaLink="true">http://yzhengfei.github.io/blog/2015/11/15/Linux%E5%91%BD%E4%BB%A4-MySql%20json%20column%E6%95%B0%E6%8D%AE%E5%8E%BB%E9%87%8D%E5%A4%84%E7%90%86.html</guid>
+        
+        <category>Linux命令</category>
+        
+        
+      </item>
     
       <item>
         <title>Extjs5-Ext.form.field.Tag初始化数据实现filter加载</title>
