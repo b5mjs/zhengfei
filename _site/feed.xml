@@ -6,9 +6,93 @@
 </description>
     <link>http://yzhengfei.github.io/blog/</link>
     <atom:link href="http://yzhengfei.github.io/blog/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sun, 15 Nov 2015 16:25:24 +0800</pubDate>
-    <lastBuildDate>Sun, 15 Nov 2015 16:25:24 +0800</lastBuildDate>
+    <pubDate>Mon, 16 Nov 2015 16:32:52 +0800</pubDate>
+    <lastBuildDate>Mon, 16 Nov 2015 16:32:52 +0800</lastBuildDate>
     <generator>Jekyll v2.5.3</generator>
+    
+      <item>
+        <title>微信营销打假-携程帮忙砍一刀</title>
+        <description>&lt;p&gt;朋友圈有朋友分享携程的一个营销活动,大概意思是买携程有些旅游产品分享给好友后,好友可以帮你砍价,一个好友只有一次砍价机会,砍掉的价钱就从这个旅游产品价格中减去(看起来好诱人啊!!!)
+&lt;img src=&quot;http://7xnxev.com1.z0.glb.clouddn.com/2015-11-16/20151116135355.png&quot; alt=&quot;活动规则&quot;&gt;&lt;/p&gt;
+
+&lt;p&gt;貌似这下面的旅游产品都可以砍价&lt;a href=&quot;http://m.ctrip.com/webapp/tour/grouptravel&quot;&gt;http://m.ctrip.com/webapp/tour/grouptravel&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3&gt;原理&lt;/h3&gt;
+
+&lt;p&gt;平常咱们浏览器打开一个服务器地址后,服务器为了区别是哪个客户端打开的,会给这个浏览器分配一个标识符,可以把这个标识符变相的认为是一个用户,当我把这个标识符找到后清除掉,服务端就不知道是哪个客户端在访问,就会重新为我分配一个标识符,就类似我从新换了一个用户,这样我们就可以做到多用户砍价了,原理就是这样&lt;/p&gt;
+
+&lt;h3&gt;分析网页&lt;/h3&gt;
+
+&lt;p&gt;一般这个标识符放在Cookie或者Local Storage或者Url参数中.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://7xnxev.com1.z0.glb.clouddn.com/2015-11-16/20151116140112.png&quot; alt=&quot;Cookie&quot;&gt;
+&lt;img src=&quot;http://7xnxev.com1.z0.glb.clouddn.com/2015-11-16/20151116140034.png&quot; alt=&quot;Local Storage&quot;&gt;
+通过观察分析,如上图,咱们看到携程用户标识符在Cookie和LocalStorage中都有放&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://7xnxev.com1.z0.glb.clouddn.com/2015-11-16/20151116142952.png&quot; alt=&quot;帮你砍一刀按钮&quot;&gt;
+当你点击帮你砍一刀按钮后
+&lt;img src=&quot;http://7xnxev.com1.z0.glb.clouddn.com/2015-11-16/20151116143551.png&quot; alt=&quot;无法再砍了&quot;&gt;
+就不能再帮好友砍价了,刷新网页/从新打开网页/关闭浏览器或者甚至清除浏览器缓存,也是没有用的,这是因为携程网把用户ID放在Local Storage中了,当你把这两个地方的用户标识删了的话,刷新下浏览器,又可以帮好友砍价了&lt;/p&gt;
+
+&lt;h3&gt;找需要用到的接口或页面&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;找创建客户端标识符ID的接口或页面
+&lt;img src=&quot;http://7xnxev.com1.z0.glb.clouddn.com/2015-11-16/20151116145942.png&quot; alt=&quot;找创建客户端标识符ID的接口或页面&quot;&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;找点击砍一刀按钮调用的接口
+&lt;img src=&quot;http://7xnxev.com1.z0.glb.clouddn.com/2015-11-16/20151116150330.png&quot; alt=&quot;找点击砍一刀按钮调用的接口&quot;&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3&gt;着手干&lt;/h3&gt;
+
+&lt;p&gt;我一般选择jmeter工具模拟一些请求,之所以选他,因为它很强大&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;创建一个线程组
+&lt;img src=&quot;http://7xnxev.com1.z0.glb.clouddn.com/2015-11-16/20151116150331.png&quot; alt=&quot;创建一个线程组&quot;&gt;&lt;/li&gt;
+&lt;li&gt;在线程组下创建一个HTTP请求,更名为创建客户端ID
+&lt;img src=&quot;http://7xnxev.com1.z0.glb.clouddn.com/2015-11-16/20151116150332.png&quot; alt=&quot;创建客户端ID&quot;&gt;&lt;/li&gt;
+&lt;li&gt;在线程组下创建一个正则表达式提取器,更名为提取客户端ID,用来提取[创建客户端ID]请求结果中的客户端ID参数
+&lt;img src=&quot;http://7xnxev.com1.z0.glb.clouddn.com/2015-11-16/20151116150333.png&quot; alt=&quot;提取客户端ID&quot;&gt;&lt;/li&gt;
+&lt;li&gt;在线程组下创建一个HTTP请求,更名为开始砍价
+&lt;img src=&quot;http://7xnxev.com1.z0.glb.clouddn.com/2015-11-16/20151116150334.png&quot; alt=&quot;开始砍价&quot;&gt;&lt;/li&gt;
+&lt;li&gt;在开始砍价下创建HTTP信息头管理器,更名为设置请求参数类型为json
+&lt;img src=&quot;http://7xnxev.com1.z0.glb.clouddn.com/2015-11-16/20151116150335.png&quot; alt=&quot;设置请求参数类型为json&quot;&gt;&lt;/li&gt;
+&lt;li&gt;在开始砍价下创建一个响应断言,更名为验证砍价是否成功
+&lt;img src=&quot;http://7xnxev.com1.z0.glb.clouddn.com/2015-11-16/20151116150336.png&quot; alt=&quot;验证砍价是否成功&quot;&gt;&lt;/li&gt;
+&lt;li&gt;在线程组下创建一个聚合报告&lt;/li&gt;
+&lt;li&gt;在线程组下创建一个察看结果树&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3&gt;见证奇迹的时刻&lt;/h3&gt;
+
+&lt;p&gt;当我运行脚本后,刷新自己的砍价页面
+&lt;img src=&quot;http://7xnxev.com1.z0.glb.clouddn.com/2015-11-16/IMG_0743.PNG&quot; alt=&quot;砍价页面&quot;&gt;
+可以看到有2248位好友帮我砍价,但是砍掉的价格怎么才56.75元呢?
+咱们再看另外一个旅游项目砍价结果,有1108位好友帮忙砍价,砍了73.93元
+&lt;img src=&quot;http://7xnxev.com1.z0.glb.clouddn.com/2015-11-16/20151116150338.png&quot; alt=&quot;项目价格&quot;&gt;
+&lt;img src=&quot;http://7xnxev.com1.z0.glb.clouddn.com/2015-11-16/20151116150337.png&quot; alt=&quot;砍价结果&quot;&gt;
+看了一下两个旅游项目内好友砍价记录,到了后面,基本上都是0元
+&lt;img src=&quot;http://7xnxev.com1.z0.glb.clouddn.com/2015-11-16/IMG_0744.PNG&quot; alt=&quot;砍价结果&quot;&gt;
+我猜携程帮忙砍一刀旅游项目营销,不管你有多少个用户砍价,达到一个临界点后(这个临界点应该可以在携程的后台管理),再砍也是没用的&lt;/p&gt;
+
+&lt;h3&gt;总结&lt;/h3&gt;
+
+&lt;p&gt;携程砍一刀这个营销活动是真的,但是一个旅游项目动辄上千,相对于这百元之内,基本上没有多大的优惠力度,随便用个优惠券都能顶50元,这个还要劳烦好友帮忙去砍,大家自己体会吧&lt;/p&gt;
+
+&lt;h3&gt;彩蛋&lt;/h3&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://7xnxev.com1.z0.glb.clouddn.com/2015-11-15/2015-11-16%2011%3A44%3A40.png&quot; alt=&quot;彩蛋&quot;&gt;
+一个线程,每5秒执行一次,居然也可以中奖.....&lt;/p&gt;
+</description>
+        <pubDate>Mon, 16 Nov 2015 19:24:41 +0800</pubDate>
+        <link>http://yzhengfei.github.io/blog/2015/11/16/%E5%BE%AE%E4%BF%A1%E8%90%A5%E9%94%80%E6%89%93%E5%81%87-%E6%90%BA%E7%A8%8B%E5%B8%AE%E5%BF%99%E7%A0%8D%E4%B8%80%E5%88%80.html</link>
+        <guid isPermaLink="true">http://yzhengfei.github.io/blog/2015/11/16/%E5%BE%AE%E4%BF%A1%E8%90%A5%E9%94%80%E6%89%93%E5%81%87-%E6%90%BA%E7%A8%8B%E5%B8%AE%E5%BF%99%E7%A0%8D%E4%B8%80%E5%88%80.html</guid>
+        
+        <category>微信营销打假</category>
+        
+        
+      </item>
     
       <item>
         <title>Linux命令-MySql json column数据去重处理</title>
